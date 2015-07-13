@@ -172,7 +172,7 @@ class BulkPlan(models.Model):
         return total_available - self.pieces_used
 
     def __str__(self):
-        return "Bulk plan for {0}.".format(self.owner)
+        return "Bulk plan for {0}".format(self.owner)
 
     owner = models.OneToOneField(User, related_name="bulk_plan")
     price = models.DecimalField(max_digits=8, decimal_places=2,)
@@ -186,6 +186,7 @@ class BulkPlan(models.Model):
     latest_expiration_date = property(_get_latest_expiration_date)
     pieces_used = property(_get_no_of_items_processed)
     pieces_left = property(_get_no_of_items_left)
+    name = property(__str__)
 
 class BulkPlanItem(models.Model):
     bulk_plan = models.ForeignKey(BulkPlan, related_name="items")

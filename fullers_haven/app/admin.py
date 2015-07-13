@@ -56,7 +56,7 @@ class BulkPlanItemInline(admin.TabularInline):
 
 class BulkPlanAdmin(admin.ModelAdmin):
     #custom add and edit
-    list_display = ('owner', 'status', 'number_of_items', 'pieces_used', 'pieces_left',)
+    list_display = ('name', 'status', 'number_of_items', 'pieces_used', 'pieces_left',)
     inlines = [BulkPlanItemInline,]
 
     def get_readonly_fields(self, request, obj=None):
