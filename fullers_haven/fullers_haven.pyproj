@@ -46,6 +46,24 @@
     <Folder Include="app\" />
     <Folder Include="app\migrations\" />
     <Folder Include="fullers_haven\" />
+    <Folder Include="static\" />
+    <Folder Include="static\javascripts\" />
+    <Folder Include="static\javascripts\fullers_haven\" />
+    <Folder Include="static\javascripts\fullers_haven\orders\" />
+    <Folder Include="static\javascripts\fullers_haven\orders\controllers\" />
+    <Folder Include="static\javascripts\fullers_haven\orders\directives\" />
+    <Folder Include="static\javascripts\fullers_haven\orders\services\" />
+    <Folder Include="templates\" />
+    <Folder Include="templates\admin\" />
+    <Folder Include="templates\admin\app\" />
+    <Folder Include="templates\admin\app\order\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="static\javascripts\fullers_haven\app.js" />
+    <Content Include="static\javascripts\fullers_haven\orders\controllers\new-order.controller.js" />
+    <Content Include="static\javascripts\fullers_haven\orders\orders.module.js" />
+    <Content Include="static\javascripts\fullers_haven\orders\services\order.service.js" />
+    <Content Include="templates\admin\app\order\change_form.html" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Django.targets" />
   <!-- Specify pre- and post-build commands in the BeforeBuild and 
