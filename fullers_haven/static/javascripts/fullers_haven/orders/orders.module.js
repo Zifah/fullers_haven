@@ -9,7 +9,7 @@
 
     angular
         .module('fullers_haven.orders', [
-            'fullers_haven.orders.controllers',
-            'fullers_haven.orders.services'
+            'fullers_haven.orders.services',
+            'fullers_haven.orders.controllers'            
         ]);
 })();
