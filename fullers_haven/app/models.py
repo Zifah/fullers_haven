@@ -45,6 +45,17 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    def _get_full_name(self):
+        return "{0} {1}".format(self.user.first_name, self.user.last_name)
+
+    def _get_email(self):
+        return self.user.email
+
+    #properties
+    username = property(__str__)
+    full_name = property(_get_full_name)
+    email = property(_get_email)
+
 class ItemCategory(ModelWithStatus):
     name = models.CharField(max_length=30)
     description = models.TextField()
@@ -76,13 +87,17 @@ class Product(ModelWithStatus):
     def _get_item_names(self):
         names = ""
         for item in self.items.all():
-            names += "{0},{1}".format(names, item.name)
+            names += "{0}, {1}".format(names, item.name)
         return names.strip(',')
+
+    def _get_number_of_items(self):
+        return self.items.all().count()
 
     def __str__(self):
         return self.name
 
-    item_names = property(_get_item_names)
+    items_string = property(_get_item_names)
+    number_of_items = property(_get_number_of_items)
 
 class ProductItem(models.Model):
     product = models.ForeignKey(Product, related_name="items")

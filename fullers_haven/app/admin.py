@@ -1,8 +1,9 @@
 from django.contrib import admin
-from app.models import ItemCategory, Item, Product, Alteration, Discount, Order, BulkPlan, Colour, BulkPlanActivation, BulkPlanItem, ProductItem
+from app.models import ItemCategory, Item, Product, Alteration, Discount, Order, BulkPlan, Colour, BulkPlanActivation, BulkPlanItem, ProductItem, UserProfile
 from django.contrib.auth.models import User
 from app.forms import BulkPlanActivationForm
 from django.db.models.query_utils import Q
+from django.contrib.auth.admin import UserAdmin
 
 class ItemCategoryAdmin(admin.ModelAdmin):
     pass
@@ -36,7 +37,7 @@ class ProductItemInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     exclude = ('status', 'type',)
     inlines = [ProductItemInline,]
-    list_display = ('name', 'price', 'item_names')
+    list_display = ('name', 'price', 'items_string')
 
 class AlterationAdmin(admin.ModelAdmin):
     exclude = ('status',)
@@ -102,6 +103,17 @@ class BulkPlanActivationAdmin(admin.ModelAdmin):
 class ColourAdmin(admin.ModelAdmin):
     exclude = ('status',)
 
+class MyUserAdmin(UserAdmin):
+    def save_model(self, request, obj, form, change):
+        result = super(MyUserAdmin, self).save_model(request, obj, form, change)
+
+        if not change:
+            profile = UserProfile(user=obj)
+            profile.save()
+
+        return result
+
+
 admin.site.register(ItemCategory, ItemCategoryAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(Product, ProductAdmin)
@@ -112,3 +124,6 @@ admin.site.register(Order, OrderAdmin)
 admin.site.register(BulkPlan, BulkPlanAdmin)
 admin.site.register(BulkPlanActivation, BulkPlanActivationAdmin)
 admin.site.register(Colour, ColourAdmin)
+
+admin.site.unregister(User)
+admin.site.register(User, MyUserAdmin)
