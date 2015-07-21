@@ -200,7 +200,7 @@ class BulkPlanActivation(models.Model):
     bulk_plan = models.ForeignKey(BulkPlan, related_name="activations")
     date_activated = models.DateTimeField(auto_now_add=True)
     activated_by = models.ForeignKey(User,)
-    month = models.PositiveSmallIntegerField(max_length=1, choices=MONTH_CHOICE)
+    month = models.PositiveSmallIntegerField(choices=MONTH_CHOICE)
 
     def __str__(self):
         return "{0} {1} activation for {2}".format(MONTH_CHOICE[self.month - 1][1], self.date_activated.year, self.bulk_plan)
@@ -326,4 +326,4 @@ class OrderPayment(models.Model):
 class BulkPlanPayment(models.Model):
     bulk_plan = models.ForeignKey(BulkPlan,)
     payment = models.OneToOneField(Payment,)
-    month = models.PositiveSmallIntegerField(max_length=1, choices=MONTH_CHOICE)
+    month = models.PositiveSmallIntegerField(choices=MONTH_CHOICE)
