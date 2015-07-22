@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from app.serializers import CustomerSerializer
 from app.models import UserProfile, Product
 from collections import OrderedDict
+from rest_framework.views import APIView
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
