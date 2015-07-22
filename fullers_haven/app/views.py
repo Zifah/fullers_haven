@@ -72,7 +72,7 @@ class ProductsView(APIView):
 
         # Any URL parameters get passed in **kw
         myClass = ProductOperations(get_arg1, get_arg2,)
-        result = myClass.do_work()
+        result = myClass.get_products()
         response = Response(result, status=status.HTTP_200_OK)
         return response
 

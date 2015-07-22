@@ -1,0 +1,94 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls admin_static admin_modify %}
+
+{% block extrahead %}{{ block.super }}
+<script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+{{ media }}
+{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
+<link rel="stylesheet" type="text/css" href="http://cdn.jsdelivr.net/angular.wizard/latest/angular-wizard.min.css">
+{% endblock %}
+
+{% block coltype %}colM{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
+
+{% if not is_popup %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+&rsaquo; {% if has_change_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+&rsaquo; {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+</div>
+{% endblock %}
+{% endif %}
+
+{% block content %}
+<div id="content-main" ng-app="fullers_haven" ng-controller="OrderController" ng-cloak>
+{% verbatim%}
+<wizard on-finish="finishedWizard()"> 
+    <wz-step title="Step A">
+        <select id="id-select-customer" ng-model="order.customer">
+            <option value="" selected="selected" disabled="disabled">-- select a customer --</option>
+            <option value="{{customer.username}}" ng-repeat="customer in customers">{{customer.full_name}} ({{customer.email}})</option>
+        </select>
+        <select id="id-select-order-type" ng-model="order.type">
+            <option value="" selected="selected" disabled="disabled">-- select order type --</option>
+            <option value="{{type.value}}" ng-repeat="type in order.types">{{type.name}}</option>
+        </select>
+        <input type="submit" value="Continue" ng-click="getProductsAndGoNext()"/>
+    </wz-step>
+    <wz-step title="Step B" ng-cloak>
+        <p>
+            <select id="id-select-products" ng-model="newProduct.id">
+                <option value="{{product.id}}" ng-repeat="product in products.products">{{product.name}} ({{product.items_string}})</option>
+            </select>
+            <input type="text" placeholder="how many?" ng-model="newProduct.quantity" value="1"/>
+            <input type="button" ng-click="addProductToOrder()" value="Add" />
+        </p>        
+        <table class="table table-condensed table-responsive table-hover table-bordered"> 
+            <caption>Selected Products</caption>               
+                <thead>
+                    <tr>
+                        <th class="col-xs-1"> 
+                         </th>
+                        <th>Product</th>
+                        <th class="col-xs-2">Quantity</th>
+                        <th ng-if="order.type=='N'">Price (only for 'Normal')</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-init=" fullProduct = getFullProduct(product.id) " ng-repeat="product in order.products">
+                        <td>{{$index+1}}</td>
+                        <td>{{fullProduct.name}}</td>
+                        <td>{{product.quantity}}</td>
+                        <td ng-if="order.type=='N'">{{ fullProduct.price * product.quantity }}</td>
+                        <td><a ng-click="deleteProduct($index, product)" href="#" title="Delete">[x]</a></td>
+                    </tr>
+                </tbody>
+        </table>  
+    </wz-step>
+</wizard>
+<pre>
+            {{ order }}
+</pre>
+{% endverbatim %}
+</div>
+<!-- Use LATEST folder to always get the latest version-->
+{% load compress %}
+{% load staticfiles %}
+{% compress js %}
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular.min.js"></script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/angular.wizard/latest/angular-wizard.min.js"></script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></script>
+<script type="text/javascript" src="{% static 'javascripts/fullers_haven/orders/services/order.service.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/fullers_haven/orders/controllers/new-order.controller.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/fullers_haven/orders/orders.module.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/fullers_haven/app.config.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/fullers_haven/app.js' %}"></script>
+{% endcompress %}
+{% endblock %}
