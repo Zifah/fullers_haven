@@ -45,6 +45,7 @@
     <wz-step title="Step B" ng-cloak>
         <p>
             <select id="id-select-products" ng-model="newProduct.id">
+                <option value="" selected="selected" disabled="disabled">-- select products --</option>
                 <option value="{{product.id}}" ng-repeat="product in products.products">{{product.name}} ({{product.items_string}})</option>
             </select>
             <input type="text" placeholder="how many?" ng-model="newProduct.quantity" value="1"/>
