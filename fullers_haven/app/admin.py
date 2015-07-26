@@ -6,7 +6,8 @@ from django.db.models.query_utils import Q
 from django.contrib.auth.admin import UserAdmin
 
 class ItemCategoryAdmin(admin.ModelAdmin):
-    pass
+    exclude = ('status',)
+    list_display = ('name', 'description',)
 
 class ItemAdmin(admin.ModelAdmin):
     exclude = ('status',)
@@ -79,7 +80,7 @@ class BulkPlanAdmin(admin.ModelAdmin):
         try:
             admin_form.fields['owner'].queryset = User.objects.filter(filter)
         except:
-            none = None
+            pass
             #Oops. There was an error. Now, I have to go another round of snooping around
         return super(BulkPlanAdmin, self).render_change_form(request, context, args, kwargs)
 

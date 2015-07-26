@@ -25,7 +25,7 @@ class ModelWithStatus(models.Model):
     """
     STATUS_CHOICE = ((0, 'Inactive'),
     (1, 'Active'),)
-    status = models.CharField(max_length=1, choices=STATUS_CHOICE)
+    status = models.CharField(max_length=1, choices=STATUS_CHOICE, default=1)
 
     class Meta:
         abstract = True
