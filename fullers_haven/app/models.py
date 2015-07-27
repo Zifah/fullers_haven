@@ -274,18 +274,22 @@ class Order(models.Model):
     def __str__(self):
         return "{0}'s {1} order; {2}.".format(self.customer, self.type, self.date_collected)
 
+class OrderProduct(models.Model):
+    order = models.ForeignKey(Order, related_name='order_products')
+    product = models.ForeignKey(Product,)
+    
+    ''' the name of the product as at the creation time of this order '''
+    product_name = models.CharField(max_length=50,)
+    '''each item row bears the price of the container product'''
+    product_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name="items")
+    order_product = models.ForeignKey(OrderProduct, related_name='order_items')
     item = models.ForeignKey(Item,)
-    product = models.ForeignKey(Product, related_name="products")
     ''' previously wanted to call this: Product number '''
     serial_number = models.PositiveSmallIntegerField()
     ''' the name of the item as at the creation time of this order '''
     item_name = models.CharField(max_length=50,)
-    ''' the name of the product as at the creation time of this order '''
-    product_name = models.CharField(max_length=50,)
-    '''each item row bears the price of the container product'''
-    product_price = models.DecimalField(max_digits=8, decimal_places=2,)
     colour = models.ForeignKey(Colour,)
     ''' 
     either alteration or alteration_text is filled; both cannot be filled
