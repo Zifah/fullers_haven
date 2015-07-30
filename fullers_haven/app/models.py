@@ -80,7 +80,7 @@ class Product(ModelWithStatus):
     ('M', 'Manual'),)
 
     name = models.CharField(max_length=50, unique=True,)
-    type = models.CharField(max_length=1, choices=PRODUCT_TYPE_CHOICE,)
+    type = models.CharField(max_length=1, choices=PRODUCT_TYPE_CHOICE,default='M')
     price = models.DecimalField(max_digits=8, decimal_places=2,)
     #code = models.CharField(max_length=3, blank=True, null=True)
 

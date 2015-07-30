@@ -40,6 +40,11 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductItemInline,]
     list_display = ('name', 'price', 'items_string')
 
+    def get_queryset(self, request):
+        queryset = Product.objects.filter(type='M')
+        return queryset
+        #return super(ProductAdmin, self).get_queryset(request)
+
 class AlterationAdmin(admin.ModelAdmin):
     exclude = ('status',)
 

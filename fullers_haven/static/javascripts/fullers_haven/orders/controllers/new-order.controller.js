@@ -28,6 +28,7 @@
         // METHODS
         // declaration
         $scope.getProductsAndGoNext = getProductsAndGoNext;
+        $scope, getSelectedItemsAndProceed = getSelectedItemsAndProceed;
         $scope.getFullProduct = getFullProduct;
         $scope.addProductToOrder = addProductToOrder;
         $scope.deleteProduct = deleteProduct;
@@ -62,6 +63,15 @@
             function productErrorFn(data, status, headers, config) {
                 alert("Error! Could not get product list");
             }
+        }
+
+        function getSelectedItemsAndProceed() {
+            //get array of product ids from array of selected products (lodash probably)
+            //pass this to the API in service
+            //the returned list contains the items (id, count and name) in each product whose id was supplied initially
+
+            //On the next page, each member of order.products will be exploded according to the returned list of items (count in items list will be taken into cognizance)
+            //each item in the exploded list would have: name (auto), colour (manual), alteration (manual), serial_no (auto gen) (item_tag will be autogen on server on saving order)
         }
 
         function getFullProduct(productID) {
