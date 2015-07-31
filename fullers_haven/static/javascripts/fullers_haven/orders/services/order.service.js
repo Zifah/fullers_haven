@@ -8,7 +8,8 @@
     function Orders($http) {
         var Orders = {
             getCustomers: getCustomers,
-            getProducts: getProducts
+            getProducts: getProducts,
+            getProductsById: getProductsById
         };
 
         function getCustomers() {
@@ -33,6 +34,11 @@
             //};
 
             //return products;
+        }
+
+        function getProductsByIds(productIds) {
+            var url = '/api/v1/products/?ids='+JSON.stringify(productIds);
+            return $http.get(url);
         }
 
         return Orders;

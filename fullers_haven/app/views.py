@@ -72,17 +72,35 @@ class ProductOperations(object):
                 all_products_dict += (dict,)
 
         return { "max_pieces": max_pieces, "products": all_products_dict }
+
+    #product: id, name, price, items
+    def get_products_by_id(self, ids):
+        '''
+        - Convert ids string to python array
+        - Get all products with IDs in the list
+        - Extract the properties listed above for each object on this list
+        - Put the properties into a dictionary
+        - Add each dictionary into a tuple
+        - return tuple at end of operation
+        '''
+        return ()
             
 
 
 class ProductsView(APIView):
     def get(self, request, *args, **kw):
+        ids = request.GET.get('ids', None)
         customer_username = request.GET.get('customer', None)
-        order_type = request.GET.get('order_type', None)
+        order_type = request.GET.get('order_type', None)        
+        
+        myClass = ProductOperations(customer_username, order_type)
 
-        # Any URL parameters get passed in **kw
-        myClass = ProductOperations(customer_username, order_type,)
-        result = myClass.get_products()
+
+        if ids:
+            result = myClass.get_products_by_id(ids)
+        else:
+            result = myClass.get_products()
+
         response = Response(result, status=status.HTTP_200_OK)
         return response
 

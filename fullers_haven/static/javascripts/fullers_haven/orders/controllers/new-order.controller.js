@@ -67,12 +67,27 @@
 
         function getSelectedItemsAndProceed() {
             //get array of product ids from array of selected products (lodash probably)
+            var selectedProductIDs = [];
             //pass this to the API in service
-            //the returned list contains the items (id, count and name) in each product whose id was supplied initially
+            Orders
+                .getProductsByID(selectedProductIDs)
+                .then(productSuccessFn, productErrorFn);
 
-            //On the next page, each member of order.products will be exploded according to the returned list of items (count in items list will be taken into cognizance)
-            //each item in the exploded list would have: name (auto), colour (manual), alteration (manual), serial_no (auto gen) (item_tag will be autogen on server on saving order)
-        }
+            function productSuccessFn(data, status, headers, config) {
+                $scope.selectedProducts = data.data;
+                //product: id, name, price, items
+                //the returned list contains the items (id, count and name) in each product whose id was supplied initially
+
+                //On the next page, each member of order.products will be exploded according to the returned list of items (count in items list will be taken into cognizance)
+                //each item in the exploded list would have: name (auto), colour (manual), alteration (manual), serial_no (auto gen) (item_tag will be autogen on server on saving order)
+
+                WizardHandler.wizard().next();
+            }
+
+            function productErrorFn(data, status, headers, config) {
+                alert("Error! Could not get product list");
+            }
+            }
 
         function getFullProduct(productID) {
             var theMatch = _.find($scope.productsBackup.products, { 'id': parseInt(productID, 10) })
