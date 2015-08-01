@@ -37,7 +37,7 @@
         }
 
         function getProductsById(productIds) {
-            var url = '/api/v1/products/?ids='+JSON.stringify(productIds);
+            var url = '/api/v1/products/?ids='+encodeURIComponent(JSON.stringify(productIds));
             return $http.get(url);
         }
 
