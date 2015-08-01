@@ -28,7 +28,7 @@
         // METHODS
         // declaration
         $scope.getProductsAndGoNext = getProductsAndGoNext;
-        $scope, getSelectedItemsAndProceed = getSelectedItemsAndProceed;
+        $scope.getSelectedItemsAndProceed = getSelectedItemsAndProceed;
         $scope.getFullProduct = getFullProduct;
         $scope.addProductToOrder = addProductToOrder;
         $scope.deleteProduct = deleteProduct;
@@ -67,10 +67,10 @@
 
         function getSelectedItemsAndProceed() {
             //get array of product ids from array of selected products (lodash probably)
-            var selectedProductIDs = [];
+            var selectedProductIDs = _.pluck($scope.order.products, 'id');
             //pass this to the API in service
             Orders
-                .getProductsByID(selectedProductIDs)
+                .getProductsById(selectedProductIDs)
                 .then(productSuccessFn, productErrorFn);
 
             function productSuccessFn(data, status, headers, config) {

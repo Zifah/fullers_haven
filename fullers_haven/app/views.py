@@ -5,6 +5,7 @@ from app.models import UserProfile, Product
 from collections import OrderedDict
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import json
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
@@ -73,17 +74,41 @@ class ProductOperations(object):
 
         return { "max_pieces": max_pieces, "products": all_products_dict }
 
-    #product: id, name, price, items
+    #product: id, name, price, items (name, count)
     def get_products_by_id(self, ids):
         '''
         - Convert ids string to python array
         - Get all products with IDs in the list
         - Extract the properties listed above for each object on this list
         - Put the properties into a dictionary
-        - Add each dictionary into a tuple
+        - Add each dictionary into a list
         - return tuple at end of operation
         '''
-        return ()
+        result = []
+
+        ids_list = json.loads(ids)
+        matching_products = Product.objects.filter(id__in=ids_list)
+
+        for product in matching_products:
+            dict = OrderedDict()
+            dict["id"] = product.id                
+            dict["name"] = product.name
+            dict["price"] = product.price
+
+            items_list = []
+            
+            for item in product.items.all():
+                item_dict = OrderedDict()
+                item_dict["name"] = item.name
+                item_dict["count"] = item.quantity
+                items_list.append(item_dict)
+
+            dict["items"] = items_list
+
+            result.append(dict)
+
+
+        return result
             
 
 
