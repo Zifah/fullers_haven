@@ -1,19 +1,32 @@
 from django.contrib.auth.models import User
 from rest_framework import viewsets, status
-from app.serializers import CustomerSerializer
-from app.models import UserProfile, Product
+from app.serializers import CustomerSerializer, ColourSerializer, AlterationSerializer
+from app.models import UserProfile, Product, Colour, Alteration
 from collections import OrderedDict
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import json
 
-
 class CustomerViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows users to be viewed or edited
+    API endpoint that allows customers to be viewed or edited
     """
     queryset = UserProfile.objects.filter(user__is_staff=False)
     serializer_class = CustomerSerializer
+
+class ColourViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows colours to be viewed
+    """
+    queryset = Colour.objects.all()
+    serializer_class = ColourSerializer
+
+class AlterationViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows colours to be viewed
+    """
+    queryset = Alteration.objects.all()
+    serializer_class = AlterationSerializer
 
 class ProductOperations(object):
     def __init__(self, customer_username, order_type):
@@ -74,7 +87,7 @@ class ProductOperations(object):
 
         return { "max_pieces": max_pieces, "products": all_products_dict }
 
-    #product: id, name, price, items (name, count)
+    #product: id, name, price, items (id, name, count)
     def get_products_by_id(self, ids):
         '''
         - Convert ids string to python array
@@ -99,6 +112,7 @@ class ProductOperations(object):
             
             for item in product.items.all():
                 item_dict = OrderedDict()
+                item_dict["id"] = item.id
                 item_dict["name"] = item.name
                 item_dict["count"] = item.quantity
                 items_list.append(item_dict)
@@ -109,8 +123,6 @@ class ProductOperations(object):
 
 
         return result
-            
-
 
 class ProductsView(APIView):
     def get(self, request, *args, **kw):

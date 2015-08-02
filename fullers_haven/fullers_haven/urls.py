@@ -1,11 +1,13 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from rest_framework import routers
-from app.views import CustomerViewSet, ProductsView
+from app.views import CustomerViewSet, ProductsView, ColourViewSet, AlterationViewSet
 from django.views.generic.base import RedirectView
 
 router = routers.DefaultRouter()
 router.register(r'customers', CustomerViewSet)
+router.register(r'colours', ColourViewSet)
+router.register(r'alterations', AlterationViewSet)
 
 urlpatterns = patterns('',
     # Examples:

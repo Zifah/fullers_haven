@@ -9,11 +9,21 @@
         var Orders = {
             getCustomers: getCustomers,
             getProducts: getProducts,
-            getProductsById: getProductsById
+            getProductsById: getProductsById,
+            getColours: getColours,
+            getAlterations: getAlterations,
         };
 
         function getCustomers() {
             return $http.get('/api/v1/customers/');
+        }
+
+        function getColours() {
+            return $http.get('/api/v1/colours/');
+        }
+
+        function getAlterations() {
+            return $http.get('/api/v1/alterations/');
         }
 
         function getProducts(customerUsername, orderType) {

@@ -48,7 +48,7 @@
                 <option value="" selected="selected" disabled="disabled">-- select products --</option>
                 <option value="{{product.id}}" ng-repeat="product in products.products">{{product.name}} ({{product.items_string}})</option>
             </select>
-            <input type="text" placeholder="how many?" ng-model="newProduct.quantity" value="1"/>
+            <input type="text" placeholder="how many?" ng-model="newProduct.quantity" value="1" integer />
             <input type="button" ng-click="addProductToOrder()" value="Add" />
         </p>        
         <table class="table table-condensed table-responsive table-hover table-bordered"> 
@@ -75,6 +75,39 @@
         <p>
             <input type="submit" value="Continue" ng-click="getSelectedItemsAndProceed()"/>
         </p>
+    </wz-step>
+    <wz-step title="Step C: Enter Item details" ng-cloak>
+        <table class="table table-condensed table-responsive table-hover table-bordered"> 
+            <caption>Order Item Details</caption>               
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Product</th>
+                        <th>Item</th>
+                        <th>Colour</th>
+                        <th>Alteration</th>
+                    </tr>
+                </thead>
+                <tbody ng-repeat="product in order.productItems">
+                    <tr ng-repeat="item in product.items">
+                        <td>{{item.serialNumber}}</td>
+                        <td>{{product.name}} (Product {{product.serialNumber}})</td>
+                        <td>{{item.name}}</td>
+                        <td>
+                            <select id="id-select-order-item-colour" ng-model="item.colourId">
+                                <option value="" selected="selected" disabled="disabled">-- select colour --</option>
+                                <option value="{{colour.id}}" ng-repeat="colour in colours">{{colour.name}}</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select id="id-select-order-item-alteration" ng-model="item.alterationId">
+                                <option value="" selected="selected" disabled="disabled">-- select alteration --</option>
+                                <option value="{{alteration.id}}" ng-repeat="alteration in alterations">{{alteration.name}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+        </table>
     </wz-step>
 </wizard>
 <pre>
