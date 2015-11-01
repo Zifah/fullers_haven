@@ -12,6 +12,9 @@
             getProductsById: getProductsById,
             getColours: getColours,
             getAlterations: getAlterations,
+            saveOrder: saveOrder,
+            getOrderById: getOrderById,
+            updateOrder: updateOrder
         };
 
         function getCustomers() {
@@ -49,6 +52,18 @@
         function getProductsById(productIds) {
             var url = '/api/v1/products/?ids='+encodeURIComponent(JSON.stringify(productIds));
             return $http.get(url);
+        }
+
+        function saveOrder(theOrder) {
+            return $http.post('/api/v1/orders/', theOrder);
+        }
+
+        function getOrderById(orderId) {
+            return $http.get('/api/v1/orders/'+orderId+'/');
+        }
+
+        function updateOrder(orderId, theOrder) {
+            return $http.put('/api/v1/orders/'+orderId+'/', theOrder);
         }
 
         return Orders;

@@ -1,0 +1,107 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en" wcxlastxpos="1126" wcxlastypos="565" wcxlasttime="1443969157664" wcxdocid="1443967786806" wcxlastmousedownxpos="1199" wcxlastmousedownypos="163" wcxlastmouseupxpos="1199"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Order Invoice</title>
+    <link rel="stylesheet" href="{% static "css/receipt-style.css" %}" media="all">
+  </head>
+  <body>
+    <header class="clearfix">
+      <div id="logo">
+        <img src="{% static "images/logo.png" %}">
+      </div>
+      <div id="company">
+        <h2 class="name">{{ company.name }}</h2>
+        <div>{{ company.address }}</div>
+        <div>{{ company.phone }}</div>
+        <div><a href="mailto:{{ company.email }}">{{ company.email }}</a></div>
+      </div>
+      
+    </header>
+    <main>    
+        <div class="desc"><a href="javascript:if(window.print)window.print()">Print</a></div>
+      <div id="details" class="clearfix">
+        <div id="client">
+          <div class="to">INVOICE TO:</div>
+          <h2 class="name">{{ order.customer.profile.full_name }}</h2>
+          <!--<div class="address">{{ order.customer.profile.home_address }}</div>-->
+          <div class="email"><a href="mailto:{{ order.customer.email }}">{{ order.customer.email }}</a></div>
+        </div>
+        <div id="invoice">
+          <h1>INVOICE {{ order.order_number }}</h1>
+          <div class="date">Date of Invoice: {{ order.date_initiated.date }} </div>
+          <div class="date">Due Date: {{ order.date_fulfillment_scheduled }} </div>
+        </div>
+      </div>
+        
+      <table border="0" cellspacing="0" cellpadding="0">
+        <thead>
+          <tr>
+            <th class="no">#</th>
+            <th class="desc">PRODUCT</th>        
+            <th class="unit">UNIT PRICE (&#8358;)</th>
+            <th class="qty">QUANTITY</th>
+            <th class="total">TOTAL (&#8358;)</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for order_product in order.order_products_distinct %}            
+              <tr>
+                <td class="no">{{ forloop.counter }}</td>
+                <td class="desc">
+                  <h3>{{ order_product.product_name }}</h3>
+                  {% for order_item in order_product.order_items_distinct %}
+                    <span>{{order_item.item_name}} ({{order_item.count}})</span>, 
+                  {% endfor %}
+                </td>
+                <td class="unit">
+                    {% if order.type == 'N' %}
+                    {{ order_product.product_price }}
+                    {% endif %}
+                </td>
+                <td class="qty">{{ order_product.count }}</td>
+                <td class="total">
+                    {% if order.type == 'N' %}
+                    {{ order_product.aggregate_price }}
+                    {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"></td>
+            <td colspan="2">SUBTOTAL</td>
+            <td>
+                    {% if order.type == 'N' %}
+                    &#8358; {{ order.amount }}
+                    {% endif %}
+            </td>
+          </tr>
+          <!--<tr>
+            <td colspan="2"></td>
+            <td colspan="2">TAX 25%</td>
+            <td>$1,300.00</td>
+          </tr>-->
+          <tr>
+            <td colspan="2"></td>
+            <td colspan="2">GRAND TOTAL</td>
+            <td>
+                    {% if order.type == 'N' %}
+                    &#8358; {{ order.amount }}
+                    {% endif %}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+      <div id="thanks">Thank you!</div>
+      <!--<div id="notices">
+        <div>NOTICE:</div>
+        <div class="notice">A finance charge of 1.5% will be made on unpaid balances after 30 days.</div>
+      </div>-->
+    </main>
+    <footer>
+      Invoice was created on a computer and is valid without the signature and seal.
+    </footer>
+  
+</body></html>

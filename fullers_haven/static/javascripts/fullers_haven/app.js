@@ -5,7 +5,8 @@
         .module('fullers_haven', [
             'fullers_haven.config',
             'fullers_haven.orders',
-            'mgo-angular-wizard'
+            'mgo-angular-wizard',
+            'pickadate'
         ]);
 
     app.directive('integer', integer);

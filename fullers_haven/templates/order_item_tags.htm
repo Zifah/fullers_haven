@@ -1,0 +1,26 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en" wcxlastxpos="1126" wcxlastypos="565" wcxlasttime="1443969157664" wcxdocid="1443967786806" wcxlastmousedownxpos="1199" wcxlastmousedownypos="163" wcxlastmouseupxpos="1199">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <title>Order Item Tags</title>
+</head>
+<body>
+    <table border="1" cellspacing="0" cellpadding="0">
+        <tbody>
+            {% for order_item in order.items %}   
+            {% if forloop.counter0|divisibleby:tags_per_row %}
+                <tr>
+            {% endif %}
+                <td>
+                    {{order_item.item_tag}}
+                <td/>  
+            {% if forloop.counter|divisibleby:tags_per_row or forloop.counter == order.items.count %}
+                </tr>
+            {% endif %}            
+            {% endfor %}
+        </tbody>        
+      </table>
+</body>
+</html>

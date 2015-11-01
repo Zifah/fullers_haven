@@ -10,7 +10,8 @@
 {{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}" />
 <link rel="stylesheet" type="text/css" href="http://cdn.jsdelivr.net/angular.wizard/latest/angular-wizard.min.css">
-{% endblock %}
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="{% static "css/angular-pickadate/angular-pickadate.css" %}" />{% endblock %}
 
 {% block coltype %}colM{% endblock %}
 
@@ -19,47 +20,57 @@
 {% if not is_popup %}
 {% block breadcrumbs %}
 <div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-&rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
-&rsaquo; {% if has_change_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
-&rsaquo; {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
+    <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+    &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+    &rsaquo; {% if has_change_permission %}<a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>{% else %}{{ opts.verbose_name_plural|capfirst }}{% endif %}
+    &rsaquo; {% if add %}{% trans 'Add' %} {{ opts.verbose_name }}{% else %}{{ original|truncatewords:"18" }}{% endif %}
 </div>
 {% endblock %}
 {% endif %}
 
 {% block content %}
-<div id="content-main" ng-app="fullers_haven" ng-controller="OrderController" ng-cloak>
-{% verbatim%}
-<wizard on-finish="finishedWizard()"> 
-    <wz-step title="Step A">
-        <select id="id-select-customer" ng-model="order.customer">
-            <option value="" selected="selected" disabled="disabled">-- select a customer --</option>
-            <option value="{{customer.username}}" ng-repeat="customer in customers">{{customer.full_name}} ({{customer.email}})</option>
-        </select>
-        <select id="id-select-order-type" ng-model="order.type">
-            <option value="" selected="selected" disabled="disabled">-- select order type --</option>
-            <option value="{{type.value}}" ng-repeat="type in order.types">{{type.name}}</option>
-        </select>
-        <input type="submit" value="Continue" ng-click="getProductsAndGoNext()"/>
-    </wz-step>
-    <wz-step title="Step B" ng-cloak>
-        <p>
-            <select id="id-select-products" ng-model="newProduct.id">
-                <option value="" selected="selected" disabled="disabled">-- select products --</option>
-                <option value="{{product.id}}" ng-repeat="product in products.products">{{product.name}} ({{product.items_string}})</option>
+{% if not change %}
+<div id="create-form" ng-app="fullers_haven" ng-controller="OrderController" ng-init="change=false" ng-cloak>
+    {% verbatim%}
+    <wizard on-finish="finishedWizard()">
+        <wz-step title="Step A">
+            <select id="id-select-customer" ng-model="order.customer">
+                <option value="" selected="selected" disabled="disabled">-- select a customer --</option>
+                <option value="{{customer.username}}" ng-repeat="customer in customers">{{customer.full_name}} ({{customer.email}})</option>
             </select>
-            <input type="text" placeholder="how many?" ng-model="newProduct.quantity" value="1" integer />
-            <input type="button" ng-click="addProductToOrder()" value="Add" />
-        </p>        
-        <table class="table table-condensed table-responsive table-hover table-bordered"> 
-            <caption>Selected Products</caption>               
+            <select id="id-select-order-type" ng-model="order.type">
+                <option value="" selected="selected" disabled="disabled">-- select order type --</option>
+                <option value="{{type.value}}" ng-repeat="type in orderTypes">{{type.name}}</option>
+            </select>
+            <input type="submit" value="Continue" ng-click="getProductsAndGoNext()" />
+        </wz-step>
+        <wz-step title="Step B" ng-cloak>
+            <p>
+                <select id="id-select-products" ng-model="newProduct.id">
+                    <option value="" selected="selected" disabled="disabled">-- select products --</option>
+                    <option value="{{product.id}}" ng-repeat="product in products.products">{{product.name}} ({{product.items_string}})</option>
+                </select>
+                <input type="text" placeholder="how many?" ng-model="newProduct.quantity" value="1" integer />
+                <input type="button" ng-click="addProductToOrder()" value="Add" />
+            </p>
+            <p>
+                Order Type: <strong>{{getOrderType()}}</strong>
+            </p>
+            <p ng-show="order.type == 'B'">
+                Items left in bulk plan: <strong>{{productsBackup.max_pieces}}</strong>
+            </p>
+            <table class="table table-condensed table-responsive table-hover table-bordered">
+                <caption>Selected Products</caption>
                 <thead>
                     <tr>
-                        <th class="col-xs-1"> 
-                         </th>
+                        <th class="col-xs-1">
+                        </th>
                         <th>Product</th>
                         <th class="col-xs-2">Quantity</th>
-                        <th ng-if="order.type=='N'">Price (only for 'Normal')</th>
+                        <th class="col-xs-2">Limit</th>
+                        <th ng-if="order.type=='N'">Unit Price</th>
+                        <th class="col-xs-2">Pieces count: {{getTotalOrderPieces()}}</th>
+                        <th ng-if="order.type=='N'">Price</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -67,32 +78,35 @@
                         <td>{{$index+1}}</td>
                         <td>{{fullProduct.name}}</td>
                         <td>{{product.quantity}}</td>
+                        <td>{{fullProduct.max_allowed ? fullProduct.max_allowed : 'N/A' }}</td>
+                        <td ng-if="order.type=='N'">{{ fullProduct.price }}</td>
+                        <td>{{fullProduct.number_of_items * product.quantity}}</td>
                         <td ng-if="order.type=='N'">{{ fullProduct.price * product.quantity }}</td>
-                        <td><a ng-click="deleteProduct($index, product)" href="#" title="Delete">[x]</a></td>
+                        <td><a ng-click="deleteProduct($index, product.id)" href="#" title="Delete">[x]</a></td>
                     </tr>
                 </tbody>
-        </table>  
-        <p>
-            <input type="submit" value="Continue" ng-click="getSelectedItemsAndProceed()"/>
-        </p>
-    </wz-step>
-    <wz-step title="Step C: Enter Item details" ng-cloak>
-        <table class="table table-condensed table-responsive table-hover table-bordered"> 
-            <caption>Order Item Details</caption>               
+            </table>
+            <p>
+                <input type="submit" value="Continue" ng-click="getSelectedItemsAndProceed()" />
+            </p>
+        </wz-step>
+        <wz-step title="Step C: Enter Item details" ng-cloak>
+            <table class="table table-condensed table-responsive table-hover table-bordered">
+                <caption>Order Item Details</caption>
                 <thead>
                     <tr>
-                        <th>S.No.</th>
-                        <th>Product</th>
+                        <!--<td><th>S.No.</th></td>-->
                         <th>Item</th>
-                        <th>Colour</th>
-                        <th>Alteration</th>
+                        <th>Product</th>
+                        <th>Colour <a href="#" ng-click="refreshColours()">[refresh]</a></th>
+                        <th>Alteration <a href="#" ng-click="refreshAlterations()">[refresh]</a></th>
                     </tr>
                 </thead>
                 <tbody ng-repeat="product in order.productItems">
                     <tr ng-repeat="item in product.items">
-                        <td>{{item.serialNumber}}</td>
-                        <td>{{product.name}} (Product {{product.serialNumber}})</td>
+                        <!--<td>{{$index+1}}</td>-->
                         <td>{{item.name}}</td>
+                        <td>{{product.name}} (Product {{product.serialNumber}})</td>
                         <td>
                             <select id="id-select-order-item-colour" ng-model="item.colourId">
                                 <option value="" selected="selected" disabled="disabled">-- select colour --</option>
@@ -101,25 +115,183 @@
                         </td>
                         <td>
                             <select id="id-select-order-item-alteration" ng-model="item.alterationId">
-                                <option value="" selected="selected" disabled="disabled">-- select alteration --</option>
+                                <option value="" selected="selected">-- select alteration --</option>
                                 <option value="{{alteration.id}}" ng-repeat="alteration in alterations">{{alteration.name}}</option>
                             </select>
                         </td>
                     </tr>
                 </tbody>
-        </table>
-    </wz-step>
-</wizard>
-<pre>
+            </table>
+            <p>
+                <input type="submit" value="Continue" ng-click="validateItemsAndProceed()" />
+            </p>
+        </wz-step>
+        <wz-step title="Step D: Confirm order details" ng-cloak>
+            <p>
+                Total no. of items: {{getTotalOrderPieces()}}
+            </p>
+            <p>
+                Total cost: {{getOrderTotalPrice()}}
+            </p>
+            <p>
+                Scheduled collection date:
+                <input type="text" ng-model="order.dateFulfilmentScheduled" pickadate format="dd/mm/yyyy" />
+            </p>
+            <table class="table table-condensed table-responsive table-hover table-bordered">
+                <caption>Confirm order details</caption>
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Item</th>
+                        <th>Colour</th>
+                        <th>Alteration</th>
+                        <th>Product</th>
+                    </tr>
+                </thead>
+                <tbody ng-repeat="product in order.productItems">
+                    <tr ng-repeat="item in product.items">
+                        <td>{{item.serialNumber}}</td>
+                        <td>{{item.name}}</td>
+                        <td>
+                            <label name="lblItemColour">{{ getNameById(item.colourId, colours) }}</label>
+                        </td>
+                        <td>
+                            <label name="lblItemColour">{{ getNameById(item.alterationId, alterations) }}</label>
+                        </td>
+                        <td>{{product.name}} (Product {{product.serialNumber}})</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <input type="submit" value="Complete Order" wz-finish="saveOrder()" />
+            </p>
+        </wz-step>
+    </wizard>
+<!--<pre>
             {{ order }}
-</pre>
-{% endverbatim %}
+</pre>-->
+    {% endverbatim %}
 </div>
+{% else %}
+<div id="change-form" ng-app="fullers_haven" ng-init="initChange({{object_id}})" ng-controller="OrderController" ng-cloak>
+    {% verbatim%}
+    <div class="row">
+        <div class="col-lg-12">
+            <a class="button" href="tags" target="_blank">Print tags</a> <!-- Generate an HTML table with all item tags. Allow download as PDF. -->            
+            <a class="button" href="receipt" target="_blank">Print receipt</a>
+            <a class="button" ng-click="recordOrderCompletion()">Record completion</a>
+            <a class="button" ng-click="recordOrderDelivery()">Record delivery</a>
+            <a class="button" ng-click="cancelOrder()">Cancel</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <dl class="dl-horizontal">
+                <dt>Reference number</dt>
+                <dd>{{changeOrder.order_number}}</dd>
+                <dt>Customer name</dt>
+                <dd>{{changeOrder.customer.full_name}}</dd>
+                <dt>Received by</dt>
+                <dd>{{changeOrder.staff.username}}</dd>
+                <dt>Type</dt>
+                <dd>{{changeOrder.type}}</dd>
+                <dt>Status</dt>
+                <dd>{{changeOrder.status}}</dd>
+                <dt>Number of items</dt>
+                <dd>{{changeOrder.number_of_items}}</dd>
+                <dt>Received on</dt>
+                <dd>{{changeOrder.date_received}}</dd>
+                <dt>Should be ready by</dt>
+                <dd>{{changeOrder.date_fulfillment_scheduled}}</dd>
+                <dt>Was ready on</dt>
+                <dd>{{changeOrder.date_fulfillment_actual}}</dd>
+                <dt>Delivered / Picked-up on</dt>
+                <dd>{{changeOrder.date_delivered}}</dd>
+                <dt>Payment status</dt>
+                <dd>{{changeOrder.payment_status}}</dd>
+                <dt>Amount payable</dt>
+                <dd>{{changeOrder.amount_payable}}</dd>
+                <dt>Amount paid</dt>
+                <dd>{{changeOrder.amount_paid}}</dd>
+                <dt>Items</dt>
+                <dd>
+                    <table class="table table-condensed table-responsive table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Product</th>
+                                <th>Colour</th>
+                                <th>Alteration</th>
+                                <th>Tag</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="item in changeOrder.items">
+                                <td>
+                                    {{item.name}}
+                                </td>
+                                <td>
+                                    {{item.product}}
+                                </td>
+                                <td>
+                                    {{ item.colour }}
+                                </td>
+                                <td>
+                                    {{ item.alteration}}
+                                </td>
+                                <td>
+                                    {{item.tag}}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </dd>
+                <dt>Payments</dt>
+                <dd>
+                    <table class="table table-condensed table-responsive table-hover table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Amount</th>
+                                <th>Instrument</th>
+                                <th>Reference</th>
+                                <th>Cashier</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="payment in changeOrder.payments">
+                                <td>
+                                    {{ payment.amount }}
+                                </td>
+                                <td>
+                                    {{ payment.instrument }}
+                                </td>
+                                <td>
+                                    {{ payment.reference }}
+                                </td>
+                                <td>
+                                    {{ payment.cashier }}
+                                </td>
+                                <td>
+                                    {{ payment.date }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </dd>
+            </dl>
+        </div>
+    </div>
+    {% endverbatim %}
+</div>
+{% endif %}
+
+{#<!--<div style="display:none" id="django-debug"><pre>{% debug %}</pre></div>-->#}
 <!-- Use LATEST folder to always get the latest version-->
 {% load compress %}
 {% load staticfiles %}
 {% compress js %}
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.28/angular.min.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
 <script type="text/javascript" src="//cdn.jsdelivr.net/angular.wizard/latest/angular-wizard.min.js"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></script>
 <script type="text/javascript" src="{% static 'javascripts/fullers_haven/orders/services/order.service.js' %}"></script>
@@ -127,5 +299,6 @@
 <script type="text/javascript" src="{% static 'javascripts/fullers_haven/orders/orders.module.js' %}"></script>
 <script type="text/javascript" src="{% static 'javascripts/fullers_haven/app.config.js' %}"></script>
 <script type="text/javascript" src="{% static 'javascripts/fullers_haven/app.js' %}"></script>
+<script type="text/javascript" src="{% static 'javascripts/angular-pickadate/angular-pickadate.min.js' %}"></script>
 {% endcompress %}
 {% endblock %}
