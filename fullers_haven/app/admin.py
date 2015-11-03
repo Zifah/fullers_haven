@@ -151,7 +151,7 @@ class MyUserAdmin(UserAdmin):
 
         return result
 
-class UserProfileAdmin(admin.):
+class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('username', 'full_name', 'email', 'phone', 'home_address', 'user_type', 'date_registered')
 
 
