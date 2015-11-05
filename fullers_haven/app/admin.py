@@ -1,12 +1,13 @@
 from django.contrib import admin
-from app.models import ItemCategory, Item, Product, Alteration, Discount, Order, BulkPlan, Colour, BulkPlanActivation, BulkPlanItem, ProductItem, UserProfile
+from app.models import ItemCategory, Item, Product, Alteration, Discount, Order, BulkPlan, Colour, BulkPlanActivation, BulkPlanItem, ProductItem, UserProfile, Payment, OrderPayment, BulkPlanPayment
 from django.contrib.auth.models import User
 from app.forms import BulkPlanActivationForm
 from django.db.models.query_utils import Q
 from django.contrib.auth.admin import UserAdmin
 
 class ItemCategoryAdmin(admin.ModelAdmin):
-    pass
+    exclude = ('status',)
+    list_display = ('name', 'description',)
 
 class ItemAdmin(admin.ModelAdmin):
     exclude = ('status',)
@@ -39,6 +40,44 @@ class ProductAdmin(admin.ModelAdmin):
     inlines = [ProductItemInline,]
     list_display = ('name', 'price', 'items_string')
 
+    def get_queryset(self, request):
+        queryset = Product.objects.filter(type='M')
+        return queryset
+        #return super(ProductAdmin, self).get_queryset(request)
+
+class PaymentAdmin(admin.ModelAdmin):
+    exclude = ('status', 'cashier', 'date',)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.cashier = request.user
+        new_item = super(PaymentAdmin, self).save_model(request, obj, form, change)
+
+class OrderPaymentAdmin(admin.ModelAdmin):
+    list_display = ('amount', 'customer_name', 'order_number', 'payment_date')
+    #exclude = ('status', 'cashier', 'date', 'purpose')
+    
+    def render_change_form(self, request, context, obj=None, *args, **kwargs):
+        admin_form = context['adminform'].form
+
+        if not obj:
+            try:
+                queryset = Order.objects.filter(type='N')
+                excludes = []
+                for order in queryset:
+                    if order.payment_status == 'Fully paid':
+                        excludes.append(order.id)
+
+                admin_form.fields['order'].queryset = queryset.exclude(pk__in=excludes)
+
+            except:
+                pass
+                #Oops. There was an error. Now, I have to go another round of snooping around
+        return super(OrderPaymentAdmin, self).render_change_form(request, context, args, kwargs)
+
+class BulkPlanPaymentAdmin(admin.ModelAdmin):
+    list_display = ('amount', 'customer_name', 'payment_date', 'month_display')
+
 class AlterationAdmin(admin.ModelAdmin):
     exclude = ('status',)
 
@@ -46,10 +85,9 @@ class DiscountAdmin(admin.ModelAdmin):
     exclude = ('status',)
     list_display = ('name', 'percentage', 'amount')
 
+class OrderAdmin(admin.ModelAdmin):    
+    list_display = ('order_number', 'customer_name', 'type_text', 'status', 'date_initiated', 'payment_status',)
 
-class OrderAdmin(admin.ModelAdmin):
-    #no edit
-    pass
 
 class BulkPlanItemInline(admin.TabularInline):
     model = BulkPlanItem
@@ -57,7 +95,7 @@ class BulkPlanItemInline(admin.TabularInline):
 
 class BulkPlanAdmin(admin.ModelAdmin):
     #custom add and edit
-    list_display = ('name', 'status', 'number_of_items', 'pieces_used', 'pieces_left',)
+    list_display = ('name', 'status', 'price', 'latest_activation_date_text', 'latest_expiration_date_text', 'number_of_items', 'pieces_used', 'pieces_left',)
     inlines = [BulkPlanItemInline,]
 
     def get_readonly_fields(self, request, obj=None):
@@ -79,7 +117,7 @@ class BulkPlanAdmin(admin.ModelAdmin):
         try:
             admin_form.fields['owner'].queryset = User.objects.filter(filter)
         except:
-            none = None
+            pass
             #Oops. There was an error. Now, I have to go another round of snooping around
         return super(BulkPlanAdmin, self).render_change_form(request, context, args, kwargs)
 
@@ -107,11 +145,35 @@ class MyUserAdmin(UserAdmin):
     def save_model(self, request, obj, form, change):
         result = super(MyUserAdmin, self).save_model(request, obj, form, change)
 
-        if not change:
+        if not UserProfile.objects.filter(user=obj):
             profile = UserProfile(user=obj)
             profile.save()
 
         return result
+
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('username', 'full_name', 'email', 'phone', 'home_address', 'user_type', 'date_registered')
+
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            read_only = ('user',)
+            return read_only
+        return self.readonly_fields
+
+    def render_change_form(self, request, context, obj=None, *args, **kwargs):
+        admin_form = context['adminform'].form  
+        filter = Q(profile=None)
+        
+        if obj:
+            filter |= Q(id = obj.user.id)
+
+        try:
+            admin_form.fields['user'].queryset = User.objects.filter(filter)
+        except:
+            pass
+            #Oops. There was an error. Now, I have to go another round of snooping around
+        return super(UserProfileAdmin, self).render_change_form(request, context, args, kwargs)
 
 
 admin.site.register(ItemCategory, ItemCategoryAdmin)
@@ -121,9 +183,14 @@ admin.site.register(Alteration, AlterationAdmin)
 admin.site.register(Discount, DiscountAdmin)
 
 admin.site.register(Order, OrderAdmin)
+admin.site.register(OrderPayment, OrderPaymentAdmin)
+admin.site.register(BulkPlanPayment, BulkPlanPaymentAdmin)
+admin.site.register(Payment, PaymentAdmin)
 admin.site.register(BulkPlan, BulkPlanAdmin)
 admin.site.register(BulkPlanActivation, BulkPlanActivationAdmin)
 admin.site.register(Colour, ColourAdmin)
 
-admin.site.unregister(User)
-admin.site.register(User, MyUserAdmin)
+#admin.site.unregister(User)
+#admin.site.register(User, MyUserAdmin)
+
+admin.site.register(UserProfile, UserProfileAdmin)
