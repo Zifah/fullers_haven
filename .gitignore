@@ -158,3 +158,6 @@ $RECYCLE.BIN/
 # Complied python classes
 .pyc
 app/migrations/*
+
+# sqlite3 database
+.sqlite3
