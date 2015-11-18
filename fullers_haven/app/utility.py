@@ -12,7 +12,7 @@ class GlobalOperations(object):
 
             return date.strftime(format)
         else:
-            return "N/A"
+            return "N/A"    
 
 class Anonymous(object):
     def __init__(self, **kwargs):

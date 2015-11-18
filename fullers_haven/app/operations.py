@@ -1,10 +1,18 @@
 from collections import OrderedDict
 from django.contrib.auth.models import User
-from app.models import Product, Order, OrderAction
-import json
+from app.models import Product, Order, OrderAction, AppSetting
 from time import strptime
 from django.utils.datetime_safe import strftime
-from app.utility import GlobalOperations
+from app.utility import GlobalOperations, Anonymous
+from django.template import Context, Template
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import urllib2
+import urllib
+import json
+import smtplib
+from django.template.loader import render_to_string
+import logging
 
 class ProductOperations(object):
     def __init__(self, customer_username, order_type):
@@ -185,6 +193,92 @@ class OrderOperations(object):
                 
         action = OrderAction(order=order, action=order_action, actor=user,)
         action.save()
+
+class Notifications(object):
+    @staticmethod
+    def generate_email(template_file_path, context_dictionary):
+        #our weird character for templating would be ~, of course
+        email_text = render_to_string(template_file_path, context_dictionary,)
+        return email_text
+
+    @staticmethod
+    def send_email(html, subject, recipient):
+        sent = False
+        error = ''
+
+        try:
+            from_name = AppSetting.objects.get(name='smtp_sender_name',).value
+            from_addr = AppSetting.objects.get(name='smtp_sender_address',).value
+            from_address = "{0} <{1}>".format(from_name, from_addr,)
+            
+            email_host = AppSetting.objects.get(name='smtp_host',).value
+            email_port = int(AppSetting.objects.get(name='smtp_port',).value)
+            email_username = AppSetting.objects.get(name='smtp_username',).value
+            email_password = AppSetting.objects.get(name='smtp_password',).value
+        
+            msg = MIMEMultipart()
+            msg['From'] = from_address
+            msg['To'] = recipient
+            msg['Subject'] = subject
+            msg.attach(MIMEText(html,'html',),)
+
+            mailserver = smtplib.SMTP(email_host, email_port,)
+            mailserver.ehlo()
+            mailserver.starttls()
+            mailserver.ehlo()
+            mailserver.login(email_username, email_password,)
+            mailserver.sendmail(from_address, recipient, msg.as_string(),)
+            mailserver.quit()
+
+            sent = True
+
+        except Exception, exc:
+            error = "mail failed; {0}".format(str(exc),)
+            logging.error(error,)
+            raise
+
+        return {'sent': sent, 'error': error,}
+
+    @staticmethod
+    def send_smssolutions_sms(template_file_path, context_dictionary, recipient, header=None):         
+        sent = False
+        error = ''
+        try:       
+            message = render_to_string(template_file_path, context_dictionary,)         
+            data = {}
+            data['username'] = AppSetting.objects.get(name='sms_api_username',).value
+            data['password'] = AppSetting.objects.get(name='sms_api_password',).value
+            data['header'] = header if header else AppSetting.objects.get(name='sms_api_sender',).value    
+            data['destAddr'] = recipient
+            data['message'] = message
+            url_values = urllib.urlencode(data)
+        
+            url = AppSetting.objects.get(name='sms_api_url',).value
+            full_url = url + '?' + url_values
+            data = urllib2.urlopen(full_url)
+
+            if data.read().lower() == 'sms sent':
+                sent = True
+
+            else:
+                error = 'data'
+
+        except Exception, exc:
+            exception_msg = str(exc)
+            error = "mail failed; {0}".format(exception_msg,)
+            logging.error(error,)
+            raise
+
+        return {'sent': sent, 'error': error,}
+
+class General(object):
+    @staticmethod
+    def get_company_information():
+        laundry_name = AppSetting.objects.get(name='laundry_name',).value
+        laundry_address = AppSetting.objects.get(name='laundry_address',).value
+        laundry_phone = AppSetting.objects.get(name='laundry_phone',).value
+        laundry_email = AppSetting.objects.get(name='laundry_email',).value
+        return Anonymous(name = laundry_name, address = laundry_address, phone = laundry_phone, email = laundry_email)
 
 
 

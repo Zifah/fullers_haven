@@ -56,6 +56,12 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+    def _get_first_name(self):
+        return self.user.first_name
+
+    def _get_last_name(self):
+        return self.user.last_name
+
     def _get_full_name(self):
         return "{0} {1}".format(self.user.first_name, self.user.last_name)
 
@@ -74,6 +80,9 @@ class UserProfile(models.Model):
     date_registered = property(_get_date_registered)
     user_type = property(_get_user_type)
 
+    first_name = property(_get_first_name)
+    last_name = property(_get_last_name)
+
 class ItemCategory(ModelWithStatus):
     name = models.CharField(max_length=30)
     description = models.TextField()
@@ -88,7 +97,7 @@ class Item(ModelWithStatus):
     name = models.CharField(max_length=50, unique=True,)
     price = models.DecimalField(max_digits=8, decimal_places=2,)
     #code = models.CharField(max_length=3, blank=True, null=True)
-    category = models.ForeignKey(ItemCategory, related_name="items", blank=True, null=True)
+    category = models.ForeignKey(ItemCategory, related_name="items",)
 
     def __str__(self):
         return self.name
@@ -516,7 +525,6 @@ class Payment(ModelWithStatus):
 
     def __str__(self):
         return "{0} naira {1} payment for {2}".format(self.amount, self.instrument_text, self.purpose_text)
-    
 
 class OrderPayment(models.Model):
     #PAYMENT_TYPE_CHOICE = (('A', 'Advance'),
@@ -580,3 +588,8 @@ class BulkPlanPayment(models.Model):
     customer_name = property(_get_customer_name)
     month_display = property(_get_month)
     payment_date = property(_get_payment_date)
+
+class AppSetting(models.Model):
+    name = models.CharField(max_length=255, unique=True,)
+    value = models.CharField(max_length=255,)
+

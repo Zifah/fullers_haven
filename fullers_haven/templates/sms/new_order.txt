@@ -1,0 +1,5 @@
+Your new FH order #{{order_number}} has {{number_of_items}} items. 
+
+It will be ready for collection on {{collection_date}}. 
+
+Thanks for your patronage.

@@ -1,7 +1,7 @@
 from django.contrib import admin
-from app.models import ItemCategory, Item, Product, Alteration, Discount, Order, BulkPlan, Colour, BulkPlanActivation, BulkPlanItem, ProductItem, UserProfile, Payment, OrderPayment, BulkPlanPayment
+from app.models import ItemCategory, Item, Product, Alteration, Discount, Order, BulkPlan, Colour, BulkPlanActivation, BulkPlanItem, ProductItem, UserProfile, Payment, OrderPayment, BulkPlanPayment, AppSetting
 from django.contrib.auth.models import User
-from app.forms import BulkPlanActivationForm
+from app.forms import UserProfileForm
 from django.db.models.query_utils import Q
 from django.contrib.auth.admin import UserAdmin
 
@@ -125,18 +125,32 @@ class BulkPlanActivationAdmin(admin.ModelAdmin):
     #custom add and edit
     def render_change_form(self, request, context, *args, **kwargs):
         admin_form = context['adminform'].form  
-        admin_form.fields['activated_by'].queryset = User.objects.filter(id=request.user.id)
+
+        try:
+            admin_form.fields['activated_by'].queryset = User.objects.filter(id=request.user.id)
+
+            queryset = BulkPlan.objects.all()
+            excludes = []
+
+            for plan in queryset:
+                if plan.is_active:
+                    excludes.append(plan.id)
+
+            admin_form.fields['bulk_plan'].queryset = queryset.exclude(pk__in=excludes)
+
+        except:
+            pass
+
         return super(BulkPlanActivationAdmin, self).render_change_form(request, context, args, kwargs)
 
     def get_readonly_fields(self, request, obj=None):
         if obj: # editing an existing object
-            read_only = ('bulk_plan',)
+            read_only = ('bulk_plan', 'activated_by',)
             return read_only
         return self.readonly_fields
 
-
     list_display = ('name', 'date_activated', 'activated_by', 'month')
-    form = BulkPlanActivationForm
+    #form = BulkPlanActivationForm
 
 class ColourAdmin(admin.ModelAdmin):
     exclude = ('status',)
@@ -154,6 +168,23 @@ class MyUserAdmin(UserAdmin):
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('username', 'full_name', 'email', 'phone', 'home_address', 'user_type', 'date_registered')
 
+    def save_model(self, request, obj, form, change):
+        result = super(UserProfileAdmin, self).save_model(request, obj, form, change)
+
+        first_name = form.cleaned_data.get('first_name',)
+        last_name = form.cleaned_data.get('last_name',)
+        is_staff = form.cleaned_data.get('is_staff',)
+        email = form.cleaned_data.get('email',)
+
+        user = obj.user
+        user.first_name = first_name
+        user.last_name = last_name
+        user.is_staff = is_staff
+        user.email = email
+
+        user.save()
+
+        return result
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
@@ -170,11 +201,33 @@ class UserProfileAdmin(admin.ModelAdmin):
 
         try:
             admin_form.fields['user'].queryset = User.objects.filter(filter)
+
         except:
             pass
             #Oops. There was an error. Now, I have to go another round of snooping around
         return super(UserProfileAdmin, self).render_change_form(request, context, args, kwargs)
 
+    def get_form(self, request, obj=None, **kwargs):            
+        form = super(UserProfileAdmin, self).get_form(request, obj, **kwargs)        
+
+        if obj and obj.user:
+            form.base_fields['first_name'].initial = obj.user.first_name
+            form.base_fields['last_name'].initial = obj.user.last_name
+            form.base_fields['is_staff'].initial = obj.user.is_staff
+            form.base_fields['email'].initial = obj.user.email
+
+        else:
+            form.base_fields['first_name'].initial = None
+            form.base_fields['last_name'].initial = None
+            form.base_fields['is_staff'].initial = None
+            form.base_fields['email'].initial = None
+
+        return form
+
+    form = UserProfileForm
+
+class AppSettingAdmin(admin.ModelAdmin):
+    list_display = ('name', 'value',)
 
 admin.site.register(ItemCategory, ItemCategoryAdmin)
 admin.site.register(Item, ItemAdmin)
@@ -194,3 +247,4 @@ admin.site.register(Colour, ColourAdmin)
 #admin.site.register(User, MyUserAdmin)
 
 admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.register(AppSetting, AppSettingAdmin)

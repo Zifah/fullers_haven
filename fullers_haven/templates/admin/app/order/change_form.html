@@ -12,7 +12,11 @@
 <link rel="stylesheet" type="text/css" href="http://cdn.jsdelivr.net/angular.wizard/latest/angular-wizard.min.css">
 <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="{% static "css/angular-pickadate/angular-pickadate.css" %}" />{% endblock %}
-
+<style>
+    [ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none;
+}
+</style>
 {% block coltype %}colM{% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
@@ -44,7 +48,7 @@
             </select>
             <input type="submit" value="Continue" ng-click="getProductsAndGoNext()" />
         </wz-step>
-        <wz-step title="Step B" ng-cloak>
+        <wz-step title="Step B">
             <p>
                 <select id="id-select-products" ng-model="newProduct.id">
                     <option value="" selected="selected" disabled="disabled">-- select products --</option>

@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'compressor',
     'app',
     'rest_framework',
+    #'debug_toolbar',
 )
 
 REST_FRAMEWORK = {
@@ -47,7 +48,8 @@ REST_FRAMEWORK = {
     #'PAGE_SIZE': 
     }
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = (    
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -57,7 +59,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",
+TEMPLATE_CONTEXT_PROCESSORS = ("django.contrib.auth.context_processors.auth",                               
+    #"django.core.context_processors.debug",
     #add this
     "django.core.context_processors.request")
 
@@ -65,7 +68,7 @@ ROOT_URLCONF = 'fullers_haven.urls'
 
 WSGI_APPLICATION = 'fullers_haven.wsgi.application'
 
-
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {

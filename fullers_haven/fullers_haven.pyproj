@@ -67,9 +67,11 @@
     <Folder Include="templates\admin\" />
     <Folder Include="templates\admin\app\" />
     <Folder Include="templates\admin\app\order\" />
+    <Folder Include="templates\sms\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="static\css\angular-pickadate\angular-pickadate.css" />
+    <Content Include="static\css\receipt-style.css" />
     <Content Include="static\javascripts\angular-pickadate\angular-pickadate.min.js" />
     <Content Include="static\javascripts\fullers_haven\app.config.js" />
     <Content Include="static\javascripts\fullers_haven\app.js" />
@@ -78,6 +80,7 @@
     <Content Include="static\javascripts\fullers_haven\orders\services\order.service.js" />
     <Content Include="templates\admin\app\order\change_form.html" />
     <Content Include="templates\invoice.htm" />
+    <Content Include="templates\sms\new_order.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.Django.targets" />
   <!-- Specify pre- and post-build commands in the BeforeBuild and 

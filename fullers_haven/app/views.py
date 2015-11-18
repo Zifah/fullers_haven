@@ -5,14 +5,15 @@ from app.models import UserProfile, Product, Colour, Alteration, Order, BulkPlan
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import json
-from app.operations import ProductOperations, OrderOperations
+from app.operations import ProductOperations, OrderOperations, Notifications, General
 from datetime import datetime
 from decimal import Decimal
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
-from app.utility import Anonymous
+from app.utility import Anonymous, GlobalOperations
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+import logging
 
 '''
 Viewsets
@@ -147,6 +148,30 @@ class OrderView(APIView):
 
                 order_item.save()
         
+        # send order email
+        to_email = order.customer.email
+        logging.error(to_email,)
+        if to_email:
+            context_dictionary = dict()
+
+            context_dictionary['company'] = General.get_company_information()
+            context_dictionary['order'] = order
+
+            invoice_email = Notifications.generate_email('invoice.htm', context_dictionary)
+            response = Notifications.send_email(invoice_email, "New Fullers Haven Order", to_email,) 
+
+        # send order SMS
+        to_phone = order.customer.profile.phone if order.customer.profile else None
+        logging.error(to_phone,)
+
+        if to_phone:
+            context_data = {'order_number': order.order_number, 
+                            'number_of_items': order.number_of_items, 
+                            'collection_date': GlobalOperations.get_date_as_text(order.date_fulfillment_scheduled, False)
+                            }
+            response = Notifications.send_smssolutions_sms('sms/new_order.txt', context_data, "234{0}".format(to_phone[1:]),)
+
+        logging.debug("Good boy",)
         return Response({'order_id' : order.id}, status=status.HTTP_201_CREATED)
 
     def put(self, request, *args, **kwargs):
@@ -196,7 +221,7 @@ class OrderInvoiceView(DetailView):
         # Call the base implementation first to get a context
         context = super(OrderInvoiceView, self).get_context_data(**kwargs)
         # Add in a QuerySet of all the books
-        context['company'] = Anonymous(name="The Fullers Haven", address = "Adekunle, Yaba", phone = "08012345678", email = "lanrealale@fullershaven.com")
+        context['company'] = General.get_company_information()
         return context
 
     @method_decorator(login_required(login_url='/admin'))
