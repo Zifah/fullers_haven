@@ -68,7 +68,7 @@ ROOT_URLCONF = 'fullers_haven.urls'
 
 WSGI_APPLICATION = 'fullers_haven.wsgi.application'
 
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
+#DEBUG_TOOLBAR_PATCH_SETTINGS = False
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
