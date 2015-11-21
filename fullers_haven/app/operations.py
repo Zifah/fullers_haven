@@ -215,6 +215,7 @@ class Notifications(object):
             email_port = int(AppSetting.objects.get(name='smtp_port',).value)
             email_username = AppSetting.objects.get(name='smtp_username',).value
             email_password = AppSetting.objects.get(name='smtp_password',).value
+            email_use_ssl = AppSetting.objects.get(name='smtp_use_ssl',).value
         
             msg = MIMEMultipart()
             msg['From'] = from_address
@@ -224,7 +225,10 @@ class Notifications(object):
 
             mailserver = smtplib.SMTP(email_host, email_port,)
             mailserver.ehlo()
-            mailserver.starttls()
+
+            if bool(email_use_ssl):
+                mailserver.starttls()
+
             mailserver.ehlo()
             mailserver.login(email_username, email_password,)
             mailserver.sendmail(from_address, recipient, msg.as_string(),)
