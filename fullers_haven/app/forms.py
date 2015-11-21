@@ -20,14 +20,26 @@ from app.models import BulkPlanActivation, BulkPlan, UserProfile
 #        exclude = ()
 
 class UserProfileForm(forms.ModelForm):
-    first_name = forms.CharField(max_length=255,)
-    last_name = forms.CharField(max_length=255,)
+    username = forms.CharField(max_length=24,)
+    password = forms.CharField(max_length=24, widget=forms.PasswordInput,)
+    first_name = forms.CharField(max_length=30,)
+    last_name = forms.CharField(max_length=30,)
     email = forms.EmailField()
     is_staff = forms.BooleanField(required=False,)
 
     class Meta:
         model = UserProfile
-        exclude = ()
+        exclude = ('user',)
+
+class UserProfileEditForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=30,)
+    last_name = forms.CharField(max_length=30,)
+    email = forms.EmailField()
+    is_staff = forms.BooleanField(required=False,)
+
+    class Meta:
+        model = UserProfile
+        exclude = ('user',)
 
 
 

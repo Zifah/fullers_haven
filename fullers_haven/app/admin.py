@@ -1,7 +1,7 @@
 from django.contrib import admin
 from app.models import ItemCategory, Item, Product, Alteration, Discount, Order, BulkPlan, Colour, BulkPlanActivation, BulkPlanItem, ProductItem, UserProfile, Payment, OrderPayment, BulkPlanPayment, AppSetting
 from django.contrib.auth.models import User
-from app.forms import UserProfileForm
+from app.forms import UserProfileForm, UserProfileEditForm
 from django.db.models.query_utils import Q
 from django.contrib.auth.admin import UserAdmin
 
@@ -169,28 +169,40 @@ class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('username', 'full_name', 'email', 'phone', 'home_address', 'user_type', 'date_registered')
 
     def save_model(self, request, obj, form, change):
-        result = super(UserProfileAdmin, self).save_model(request, obj, form, change)
+        if not change: 
+            first_name = form.cleaned_data.get('first_name',)
+            last_name = form.cleaned_data.get('last_name',)
+            is_staff = form.cleaned_data.get('is_staff',)
+            email = form.cleaned_data.get('email',)
+            username = form.cleaned_data.get('username',)
+            password = form.cleaned_data.get('password',)
 
-        first_name = form.cleaned_data.get('first_name',)
-        last_name = form.cleaned_data.get('last_name',)
-        is_staff = form.cleaned_data.get('is_staff',)
-        email = form.cleaned_data.get('email',)
+            user = User.objects.create_user(username, email, password)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.is_staff = is_staff
+            user.save()
 
-        user = obj.user
-        user.first_name = first_name
-        user.last_name = last_name
-        user.is_staff = is_staff
-        user.email = email
+            obj.user = user
+            #obj.save()
+            result = super(UserProfileAdmin, self).save_model(request, obj, form, change)
 
-        user.save()
+
+        else: 
+            result = super(UserProfileAdmin, self).save_model(request, obj, form, change)           
+            first_name = form.cleaned_data.get('first_name',)
+            last_name = form.cleaned_data.get('last_name',)
+            is_staff = form.cleaned_data.get('is_staff',)
+            email = form.cleaned_data.get('email',)
+
+            user = obj.user
+            user.first_name = first_name
+            user.last_name = last_name
+            user.is_staff = is_staff
+            user.email = email
+            user.save()
 
         return result
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:
-            read_only = ('user',)
-            return read_only
-        return self.readonly_fields
 
     def render_change_form(self, request, context, obj=None, *args, **kwargs):
         admin_form = context['adminform'].form  
@@ -208,19 +220,25 @@ class UserProfileAdmin(admin.ModelAdmin):
         return super(UserProfileAdmin, self).render_change_form(request, context, args, kwargs)
 
     def get_form(self, request, obj=None, **kwargs):            
-        form = super(UserProfileAdmin, self).get_form(request, obj, **kwargs)        
-
         if obj and obj.user:
+            self.exclude = ('user',)
+            #self.readonly_fields = ('username', 'password',)
+            form = UserProfileEditForm #super(UserProfileAdmin, self).get_form(request, obj, **kwargs)        
             form.base_fields['first_name'].initial = obj.user.first_name
             form.base_fields['last_name'].initial = obj.user.last_name
             form.base_fields['is_staff'].initial = obj.user.is_staff
             form.base_fields['email'].initial = obj.user.email
 
         else:
+            self.exclude = ('user',)
+            self.readonly_fields = ()
+            form = UserProfileForm        
             form.base_fields['first_name'].initial = None
             form.base_fields['last_name'].initial = None
             form.base_fields['is_staff'].initial = None
             form.base_fields['email'].initial = None
+            form.base_fields['username'].initial = None            
+            form.base_fields['password'].initial = None
 
         return form
 

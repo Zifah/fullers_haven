@@ -73,8 +73,13 @@ class UserProfile(models.Model):
 
     def _get_user_type(self):
         return "Staff" if self.user.is_staff else "Customer"
+
+    def _get_dummy_password(self):
+        return '********'
+
     #properties
     username = property(__str__)
+    password = property(_get_dummy_password)
     full_name = property(_get_full_name)
     email = property(_get_email)
     date_registered = property(_get_date_registered)
