@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from app.forms import UserProfileForm, UserProfileEditForm
 from django.db.models.query_utils import Q
 from django.contrib.auth.admin import UserAdmin
+from app.operations import Notifications
 
 class ItemCategoryAdmin(admin.ModelAdmin):
     exclude = ('status',)
@@ -168,6 +169,14 @@ class MyUserAdmin(UserAdmin):
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('username', 'full_name', 'email', 'phone', 'home_address', 'user_type', 'date_registered')
 
+    def send_new_staff_email(self, staff_profile, password):
+        email = staff_profile.email
+        username = staff_profile.username
+        admin_login_url = AppSetting.objects.get(name='admin_login_url').value
+
+        html = Notifications.generate_email('email/new_staff_account.html', { 'username': username, 'password': password, 'admin_login_url': admin_login_url,})
+        Notifications.send_email(html, 'New staff profile', email)
+
     def save_model(self, request, obj, form, change):
         if not change: 
             first_name = form.cleaned_data.get('first_name',)
@@ -177,16 +186,24 @@ class UserProfileAdmin(admin.ModelAdmin):
             username = form.cleaned_data.get('username',)
             password = form.cleaned_data.get('password',)
 
-            user = User.objects.create_user(username, email, password)
-            user.first_name = first_name
-            user.last_name = last_name
-            user.is_staff = is_staff
-            user.save()
+            user = User.objects.filter(username=username,)
+
+            if user:
+                user = user[0]
+
+            else:
+                user = User.objects.create_user(username, email, password)
+                user.first_name = first_name
+                user.last_name = last_name
+                user.is_staff = is_staff
+                user.save()
 
             obj.user = user
-            #obj.save()
+
             result = super(UserProfileAdmin, self).save_model(request, obj, form, change)
 
+            if user.is_staff:
+                self.send_new_staff_email(obj, password)
 
         else: 
             result = super(UserProfileAdmin, self).save_model(request, obj, form, change)           

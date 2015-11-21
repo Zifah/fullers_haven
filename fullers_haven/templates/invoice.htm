@@ -47,9 +47,9 @@
                 <tr>
                     <th class="no" style="text-align: center; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: solid; white-space: nowrap; font-weight: normal; color: #FFFFFF; font-size: 1.6em; background-color: #57B223; padding: 20px;" align="center" bgcolor="#57B223">#</th>
                     <th class="desc" style="text-align: left; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: solid; white-space: nowrap; font-weight: normal; background-color: #EEEEEE; padding: 20px;" align="left" bgcolor="#EEEEEE">PRODUCT</th>
-                    <th class="unit" style="text-align: center; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: solid; white-space: nowrap; font-weight: normal; background-color: #DDDDDD; padding: 20px;" align="center" bgcolor="#DDDDDD">UNIT PRICE (₦)</th>
+                    <th class="unit" style="text-align: center; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: solid; white-space: nowrap; font-weight: normal; background-color: #DDDDDD; padding: 20px;" align="center" bgcolor="#DDDDDD">UNIT PRICE (&#x20A6;)</th>
                     <th class="qty" style="text-align: center; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: solid; white-space: nowrap; font-weight: normal; background-color: #EEEEEE; padding: 20px;" align="center" bgcolor="#EEEEEE">QUANTITY</th>
-                    <th class="total" style="text-align: center; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: solid; white-space: nowrap; font-weight: normal; color: #FFFFFF; background-color: #57B223; padding: 20px;" align="center" bgcolor="#57B223">TOTAL (₦)</th>
+                    <th class="total" style="text-align: center; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: solid; white-space: nowrap; font-weight: normal; color: #FFFFFF; background-color: #57B223; padding: 20px;" align="center" bgcolor="#57B223">TOTAL (&#x20A6;)</th>
                 </tr>
             </thead>
             <tbody>
@@ -82,7 +82,7 @@
                     <td colspan="2" style="text-align: right; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: none; font-size: 1.2em; white-space: nowrap; border-top-width: 1px; border-top-color: #AAAAAA; border-top-style: none; background-color: #FFFFFF; padding: 10px 20px;" align="right" bgcolor="#FFFFFF">SUBTOTAL</td>
                     <td style="text-align: right; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: none; font-size: 1.2em; white-space: nowrap; border-top-width: 1px; border-top-color: #AAAAAA; border-top-style: none; background-color: #FFFFFF; padding: 10px 20px;" align="right" bgcolor="#FFFFFF">
                         {% if order.type == 'N' %}
-                        ₦ {{ order.amount }}
+                        &#x20A6; {{ order.amount }}
                         {% endif %}
                     </td>
                 </tr>
@@ -96,7 +96,7 @@
                     <td colspan="2" style="text-align: right; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: none; font-size: 1.4em; white-space: nowrap; border-top-width: 1px; border-top-color: #57B223; border-top-style: solid; color: #57B223; background-color: #FFFFFF; padding: 10px 20px;" align="right" bgcolor="#FFFFFF">GRAND TOTAL</td>
                     <td style="text-align: right; border-bottom-width: 1px; border-bottom-color: #FFFFFF; border-bottom-style: none; font-size: 1.4em; white-space: nowrap; border-top-width: 1px; border-top-color: #57B223; border-top-style: solid; color: #57B223; background-color: #FFFFFF; padding: 10px 20px;" align="right" bgcolor="#FFFFFF">
                         {% if order.type == 'N' %}
-                        ₦ {{ order.amount }}
+                        &#x20A6; {{ order.amount }}
                         {% endif %}
                     </td>
                 </tr>

@@ -67,6 +67,7 @@
     <Folder Include="templates\admin\" />
     <Folder Include="templates\admin\app\" />
     <Folder Include="templates\admin\app\order\" />
+    <Folder Include="templates\email\" />
     <Folder Include="templates\sms\" />
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +80,7 @@
     <Content Include="static\javascripts\fullers_haven\orders\orders.module.js" />
     <Content Include="static\javascripts\fullers_haven\orders\services\order.service.js" />
     <Content Include="templates\admin\app\order\change_form.html" />
+    <Content Include="templates\email\new_staff_account.html" />
     <Content Include="templates\invoice.htm" />
     <Content Include="templates\sms\new_order.txt" />
   </ItemGroup>
